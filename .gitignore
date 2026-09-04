@@ -1,0 +1,21 @@
+# ---- Python ----
+__pycache__/
+*.pyc
+*.pyo
+*.log
+
+# ---- PyInstaller 产物与中间缓存(用 build.py 可随时重建)----
+build/
+dist/
+*.spec
+
+# ---- 运行时临时 ----
+.tmp/
+
+# ---- WorkBuddy 项目元数据(含本地记忆日志,不入库)----
+.workbuddy/
+
+# ---- 系统文件 ----
+Thumbs.db
+.DS_Store
+desktop.ini

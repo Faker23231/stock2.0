@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0c1017">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="美股持仓">
+<meta name="description" content="个人美股持仓管理：实时行情、资产净值走势、盘前多空信号与日报。">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<title>美股持仓管理平台 · 盘前多空信号</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header>
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">US</div>
+      <div>
+        <h1>美股持仓管理平台</h1>
+        <div class="ver">盘前多空信号 · 可上云自托管</div>
+      </div>
+    </div>
+
+    <div class="top-kpis">
+      <div class="top-kpi">
+        <div class="k-label">总市值 (USD)</div>
+        <div class="k-value" id="top-mv">--</div>
+      </div>
+      <div class="top-kpi">
+        <div class="k-label">总盈亏</div>
+        <div class="k-value" id="top-pnl">--</div>
+      </div>
+      <div class="top-kpi">
+        <div class="k-label">当日盈亏</div>
+        <div class="k-value" id="top-day">--</div>
+      </div>
+      <div class="status">
+        <span class="dot" id="conn-dot"></span>
+        <span id="conn-text">连接中…</span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="tabs">
+    <button data-page="page-portfolio" class="active">持仓总览</button>
+    <button data-page="page-signal">盘前多空信号</button>
+    <button data-page="page-etf">ETF 推荐</button>
+    <button data-page="page-news">消息面</button>
+    <button data-page="page-report">日报</button>
+    <button data-page="page-settings">设置</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ============ 持仓总览 ============ -->
+<section class="page active" id="page-portfolio">
+  <div class="kpi-row" id="kpi-row"></div>
+
+  <div class="card">
+    <h2>资产净值走势
+      <span class="badge">按确认买入时间回溯重建 · 逐日估值</span>
+      <div class="card-actions equity-ranges" id="eq-ranges">
+        <button class="btn ghost sm" data-range="30">1M</button>
+        <button class="btn ghost sm active" data-range="90">3M</button>
+        <button class="btn ghost sm" data-range="180">6M</button>
+        <button class="btn ghost sm" data-range="365">1Y</button>
+        <button class="btn ghost sm" data-range="0">全部</button>
+      </div>
+    </h2>
+    <div class="mute eq-src" id="eq-src"></div>
+    <div class="kpi-row equity-kpis" id="eq-kpis"></div>
+    <div class="chart-box" id="equity-chart">
+      <div class="empty">快照数据不足，先添加持仓 —— 每个有持仓的交易日会自动记一条净值。</div>
+    </div>
+    <div class="mute hint">
+      蓝色面积 = 持仓市值（名义加总，USD）；虚线 = 总成本基准；
+      下方红绿柱 = 当日盈亏，按实际盈亏方向着色（<span class="up">红=盈</span>/<span class="down">绿=亏</span>，
+      做空持仓盈利同样计为红色）。曲线主体为按每笔确认买入时间<b>回溯重建</b>的逐日估值
+      （市值采用当日前复权收盘价）；真实快照点以<b>蓝圈</b>标出并覆盖当日重建值，当日点由实时估值封口。
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>添加持仓 / 自选
+      <span class="badge" id="quote-src">数据源：腾讯财经 + 东方财富</span>
+    </h2>
+    <div class="form-row">
+      <div class="search-box">
+        <label class="field" style="margin:0">
+          <span>搜索美股（代码或英文名，如 NVDA / apple）</span>
+          <input id="q-input" placeholder="输入后自动搜索，点击结果选中" autocomplete="off">
+        </label>
+        <div class="search-results" id="q-results"></div>
+      </div>
+      <label class="field" style="flex:0 0 120px">
+        <span>方向</span>
+        <select id="f-direction">
+          <option value="long">做多</option>
+          <option value="short">做空</option>
+        </select>
+      </label>
+      <label class="field" style="flex:0 0 120px">
+        <span>股数</span>
+        <input id="f-shares" type="number" step="any" placeholder="100">
+      </label>
+      <label class="field" style="flex:0 0 130px">
+        <span>成本价 (USD)</span>
+        <input id="f-cost" type="number" step="any" placeholder="留空取现价">
+      </label>
+      <label class="field" style="flex:1 1 150px">
+        <span>备注</span>
+        <input id="f-note" placeholder="可选">
+      </label>
+      <button class="btn" id="btn-add-pos">加入持仓</button>
+      <button class="btn ghost" id="btn-add-watch">加入自选</button>
+    </div>
+    <div class="mute" id="picked-hint">尚未选择标的</div>
+  </div>
+
+  <div class="card">
+    <h2>持仓明细 <span class="badge" id="pos-count">0 笔</span>
+      <div class="card-actions">
+        <button class="btn ghost sm" id="btn-refresh">立即刷新</button>
+        <button class="btn ghost sm" id="btn-clear-cache">清缓存</button>
+      </div>
+    </h2>
+    <div class="table-wrap">
+      <table>
+        <thead id="pos-thead">
+          <tr>
+            <th class="l">标的</th><th class="l">方向</th>
+            <th data-key="shares" class="sortable">股数<span class="sarr"></span></th>
+            <th data-key="cost" class="sortable">成本<span class="sarr"></span></th>
+            <th data-key="price" class="sortable">现价<span class="sarr"></span></th>
+            <th data-key="change" class="sortable">涨跌<span class="sarr"></span></th>
+            <th data-key="change_pct" class="sortable">涨跌幅<span class="sarr"></span></th>
+            <th data-key="market_value" class="sortable">市值<span class="sarr"></span></th>
+            <th data-key="pnl" class="sortable">盈亏<span class="sarr"></span></th>
+            <th data-key="pnl_pct" class="sortable">盈亏率<span class="sarr"></span></th>
+            <th data-key="day_pnl" class="sortable">当日盈亏<span class="sarr"></span></th>
+            <th data-key="weight" class="sortable">仓位<span class="sarr"></span></th>
+            <th class="l">备注</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="pos-body"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="pos-empty">还没有持仓，用上方搜索框添加。</div>
+  </div>
+
+  <div class="card">
+    <h2>持仓走势前瞻 <span class="badge">Bootstrap 情景模拟 · 具体数值+文字讲解</span>
+      <div class="card-actions">
+        <span class="mute" id="fc-time">未计算</span>
+        <button class="btn ghost sm" id="btn-refresh-forecast">重新计算</button>
+      </div>
+    </h2>
+    <div class="hint" id="fc-empty">
+      对每一只已持仓的标的：把近一年日线“重放”5000 条路径，给出未来
+      <b>1 个月 / 3 个月</b>的悲观(P10)·中性(P50)·乐观(P90)收益区间、对应价位与上涨概率，
+      并配一段文字讲解（模型说明见卡片底部）。首次计算需联网拉取一年日线，约 5~15 秒。
+    </div>
+    <div id="fc-wrap"></div>
+    <div class="mute" id="fc-model" style="line-height:1.8;padding-top:6px"></div>
+  </div>
+
+  <div class="card">
+    <h2>自选列表 <span class="badge" id="watch-count">0 只</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th class="l">标的</th><th>现价</th><th>涨跌</th><th>涨跌幅</th>
+              <th>最高</th><th>最低</th><th class="l">时间</th><th></th></tr>
+        </thead>
+        <tbody id="watch-body"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="watch-empty">暂无自选。</div>
+  </div>
+</section>
+
+<!-- ============ 盘前信号 ============ -->
+<section class="page" id="page-signal">
+  <div class="card">
+    <h2>今日文字讲解 <span class="badge" id="sig-time">未加载</span>
+      <div class="card-actions">
+        <button class="btn sm" id="btn-load-sig">重新计算</button>
+      </div>
+    </h2>
+    <div class="hint">
+      信号得分定方向、盘前快讯做佐证，直接给出今天<b>该做什么 / 不该做什么 / 等什么确认</b>。
+      先读这段结论，再对照下方信号与消息面核对自己的想法。
+    </div>
+    <div id="brief-wrap">
+      <div class="empty">点击「重新计算」生成今日讲解（约 5~15 秒，需联网拉取行情与快讯）。</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>宏观环境 <span class="badge">信号模型输入</span></h2>
+    <div class="hint">
+      模型输入：长端利率（TLT/IEF）、风险偏好（QQQ vs XLP）、地缘溢价（ITA/XAR/原油）、
+      银行信用（XLF/KRE）、防御消费（KO/PEP/XLP）、波动率（VIXY），
+      叠加各资产自身的趋势、动能、超买超卖与跨资产确认／背离。
+    </div>
+    <div class="env-grid" id="env-grid">
+      <div class="empty">点击上方「重新计算」加载盘前分析（约 3~8 秒）。</div>
+    </div>
+  </div>
+
+  <div class="signal-grid" id="signal-grid"></div>
+
+  <div class="disclaimer" id="sig-disclaimer"></div>
+</section>
+
+<!-- ============ ETF 推荐 ============ -->
+<section class="page" id="page-etf">
+  <div class="card">
+    <h2>ETF 操作建议 <span class="badge">按信号强度自动排序</span></h2>
+    <div class="hint">
+      得分 ≥ 15 取做多池，≤ -15 取做空池，中间区间只列观察标的。
+      带杠杆的 ETF（UCO/SCO/NUGT/DUST/SOXL/SOXS/TBT）存在波动衰减，仅适合日内到数日的方向交易。
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th class="l">资产</th><th class="l">方向</th><th class="l">ETF</th>
+              <th class="l">优先级</th><th>信号分</th><th class="l">推荐逻辑</th></tr>
+        </thead>
+        <tbody id="etf-body"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="etf-empty">请先在「盘前多空信号」页计算。</div>
+  </div>
+</section>
+
+<!-- ============ 消息面 ============ -->
+<section class="page" id="page-news">
+  <div class="card">
+    <h2>盘前消息面归类 <span class="badge" id="news-time">未加载</span>
+      <div class="card-actions">
+        <button class="btn ghost sm" id="btn-load-news">重新抓取</button>
+      </div>
+    </h2>
+    <div class="hint">
+      来源：华尔街见闻全球快讯 + 东方财富 7×24。已按「战争地缘 / 原油能源 / 黄金贵金属 /
+      美债利率 / 银行金融 / 半导体 / 美股大盘 / 防御消费 / 美联储政策 / 全球央行」十个主题归类，
+      并剔除纯 A 股／港股本地新闻。
+    </div>
+    <div id="news-wrap"><div class="empty">加载中…</div></div>
+  </div>
+</section>
+
+<!-- ============ 日报 ============ -->
+<section class="page" id="page-report">
+  <div class="two-col">
+    <div class="card">
+      <h2>手动生成</h2>
+      <p class="mute">日报 = 持仓估值 + 自选 + 净值曲线 + 今日策略讲解 + 多空信号与 ETF 建议 + 消息面归类；盘前报告额外侧重开盘方向与做多做空工具。</p>
+      <div class="form-row" style="margin-top:12px">
+        <label class="field" style="flex:0 0 150px">
+          <span>报告类型</span>
+          <select id="rep-kind">
+            <option value="premarket">盘前分析报告</option>
+            <option value="daily">每日持仓日报</option>
+          </select>
+        </label>
+        <label class="field" style="flex:0 0 130px">
+          <span>同时发邮件</span>
+          <select id="rep-mail">
+            <option value="0">否（只落盘）</option>
+            <option value="1">是</option>
+          </select>
+        </label>
+        <button class="btn" id="btn-gen-report">生成报告</button>
+      </div>
+      <div class="mute" id="rep-status"></div>
+    </div>
+
+    <div class="card">
+      <h2>定时任务 <span class="badge" id="sched-badge">--</span></h2>
+      <div id="sched-next" class="mute"></div>
+      <h2 style="margin-top:16px;font-size:13px">执行日志</h2>
+      <ul class="report-list" id="sched-logs"></ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>历史报告 <span class="badge" id="rep-count">0 份</span>
+      <div class="card-actions">
+        <button class="btn ghost sm" id="btn-load-reports">刷新</button>
+      </div>
+    </h2>
+    <ul class="report-list" id="rep-list"></ul>
+    <div class="empty" id="rep-empty">还没有生成过报告。</div>
+  </div>
+</section>
+
+<!-- ============ 设置 ============ -->
+<section class="page" id="page-settings">
+  <div class="two-col">
+    <div class="card">
+      <h2>运行参数</h2>
+      <label class="field"><span>前端刷新间隔（秒）</span>
+        <input id="c-refresh" type="number" min="3" step="1"></label>
+      <label class="field"><span>美元兑人民币汇率（仅展示折算）</span>
+        <input id="c-usdcny" type="number" step="0.01"></label>
+      <label class="field"><span>每日日报时间（HH:MM，本地时间）</span>
+        <input id="c-daily" placeholder="07:30"></label>
+      <label class="field"><span>盘前报告时间（HH:MM，美股 21:30 开盘可设 20:30）</span>
+        <input id="c-pre" placeholder="20:30"></label>
+      <div class="form-row">
+        <label class="field" style="flex:1"><span>自动日报</span>
+          <select id="c-auto-daily"><option value="1">开启</option><option value="0">关闭</option></select>
+        </label>
+        <label class="field" style="flex:1"><span>自动盘前报告</span>
+          <select id="c-auto-pre"><option value="1">开启</option><option value="0">关闭</option></select>
+        </label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>邮件推送 (SMTP)</h2>
+      <div class="hint">QQ 邮箱：主机 smtp.qq.com、端口 465、SSL 开启，密码填「授权码」而不是登录密码。</div>
+      <div class="form-row">
+        <label class="field" style="flex:1"><span>启用</span>
+          <select id="c-mail-en"><option value="1">开启</option><option value="0">关闭</option></select>
+        </label>
+        <label class="field" style="flex:1"><span>SSL</span>
+          <select id="c-mail-ssl"><option value="1">开启(465)</option><option value="0">关闭(587 STARTTLS)</option></select>
+        </label>
+      </div>
+      <div class="form-row">
+        <label class="field" style="flex:2"><span>SMTP 主机</span><input id="c-mail-host"></label>
+        <label class="field" style="flex:1"><span>端口</span><input id="c-mail-port" type="number"></label>
+      </div>
+      <label class="field"><span>账号</span><input id="c-mail-user"></label>
+      <label class="field"><span>密码 / 授权码</span><input id="c-mail-pass" type="password"></label>
+      <label class="field"><span>发件人（留空同账号）</span><input id="c-mail-sender"></label>
+      <label class="field"><span>收件人（多个用逗号分隔）</span><input id="c-mail-to"></label>
+      <div class="form-row">
+        <button class="btn" id="btn-save-cfg">保存设置</button>
+        <button class="btn ghost" id="btn-test-mail">发送测试邮件</button>
+      </div>
+      <div class="mute" id="cfg-status"></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- 访问口令弹窗：仅当后端配置了 auth_token（公网部署）时出现 -->
+<div class="auth-mask" id="auth-mask" style="display:none">
+  <div class="auth-box">
+    <h3>需要访问口令</h3>
+    <p class="mute">该实例已开启访问保护，请输入部署时配置的访问口令（auth_token）。</p>
+    <input id="auth-input" type="password" placeholder="输入访问口令" autocomplete="off">
+    <div class="form-row" style="margin-top:12px">
+      <button class="btn" id="auth-ok">进入</button>
+      <button class="btn ghost" id="auth-cancel">取消</button>
+    </div>
+    <div class="mute" id="auth-err"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="/static/vendor/echarts.min.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>

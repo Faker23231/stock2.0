@@ -1,0 +1,19 @@
+[Unit]
+Description=US Stock Portfolio & Premarket Signal (self-hosted)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=usstock
+Group=usstock
+WorkingDirectory=/opt/usstock
+# 只监听本机回环，TLS 由 nginx 终止；定时任务(日报/盘前)默认开启
+ExecStart=/usr/bin/python3 /opt/usstock/main.py --host 127.0.0.1 --port 8756 --no-browser
+Restart=on-failure
+RestartSec=5
+# 目录权限敏感(data 含邮箱授权码)
+UMask=0027
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,73 @@
+{
+  "refresh_seconds": 8,
+  "usd_cny": 7.1,
+  "daily_report_time": "07:30",
+  "auto_report": true,
+  "premarket_report_time": "20:30",
+  "auto_premarket": true,
+  "email": {
+    "enabled": false,
+    "smtp_host": "smtp.qq.com",
+    "smtp_port": 465,
+    "use_ssl": true,
+    "username": "",
+    "password": "",
+    "sender": "",
+    "receivers": []
+  },
+  "macro_symbols": {
+    "原油": [
+      "USO",
+      "BNO",
+      "XLE",
+      "XOP",
+      "OIH"
+    ],
+    "黄金": [
+      "GLD",
+      "IAU",
+      "GDX",
+      "SLV"
+    ],
+    "国债": [
+      "TLT",
+      "IEF",
+      "SHY",
+      "TBT"
+    ],
+    "银行": [
+      "XLF",
+      "KBE",
+      "KRE",
+      "JPM",
+      "GS"
+    ],
+    "半导体": [
+      "SMH",
+      "SOXX",
+      "NVDA",
+      "AMD",
+      "AVGO"
+    ],
+    "纳指100": [
+      "QQQ",
+      "SPY",
+      "IWM"
+    ],
+    "防御消费": [
+      "KO",
+      "PEP",
+      "XLP"
+    ],
+    "地缘军工": [
+      "ITA",
+      "XAR",
+      "LMT",
+      "RTX"
+    ],
+    "波动率": [
+      "VIXY",
+      "UVXY"
+    ]
+  }
+}

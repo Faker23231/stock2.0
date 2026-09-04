@@ -1,0 +1,90 @@
+{
+  "positions": [
+    {
+      "id": "7e644616952f",
+      "symbol": "AAPL",
+      "name": "苹果 Apple",
+      "shares": 2.0,
+      "cost": 306.0,
+      "buy_date": "2026-08-03",
+      "direction": "long",
+      "note": "迁移自旧版(ZA银行);预估买入 2026-08 上旬(8/3~8/5)",
+      "added_at": "2026-09-03 15:57:34",
+      "updated_at": "2026-09-03 15:57:34"
+    },
+    {
+      "id": "cbb4b76c6f94",
+      "symbol": "NVDA",
+      "name": "英伟达 Nvidia",
+      "shares": 0.0262,
+      "cost": 176.7176,
+      "buy_date": "2025-09-24",
+      "direction": "long",
+      "note": "迁移自旧版(ZA银行);预估买入 2025-09-24",
+      "added_at": "2026-09-03 15:57:34",
+      "updated_at": "2026-09-03 15:57:34"
+    },
+    {
+      "id": "d5cd255e0e81",
+      "symbol": "SGOV",
+      "name": "iShares 0-3月美国公债ETF",
+      "shares": 3.0,
+      "cost": 100.55,
+      "buy_date": "2026-08-14",
+      "direction": "long",
+      "note": "迁移自旧版(ZA银行);买入日无法反查(价格长期平稳)",
+      "added_at": "2026-09-03 15:57:34",
+      "updated_at": "2026-09-03 15:57:34"
+    },
+    {
+      "id": "ce7c4088ab96",
+      "symbol": "SKHU",
+      "name": "2倍做多海力士-ProShares",
+      "shares": 1.0,
+      "cost": 20.0,
+      "buy_date": "2026-08-13",
+      "direction": "long",
+      "note": "迁移自旧版(ZA银行);预估买入 2026-08-13",
+      "added_at": "2026-09-03 15:57:34",
+      "updated_at": "2026-09-03 15:57:34"
+    },
+    {
+      "id": "9d51d0206753",
+      "symbol": "V",
+      "name": "Visa",
+      "shares": 2.0,
+      "cost": 359.7,
+      "buy_date": "2026-08-14",
+      "direction": "long",
+      "note": "迁移自旧版(ZA银行);预估买入 2026-08-14",
+      "added_at": "2026-09-03 15:57:34",
+      "updated_at": "2026-09-03 15:57:34"
+    },
+    {
+      "id": "b3378f6b17b0",
+      "symbol": "COST",
+      "name": "好市多",
+      "shares": 0.5,
+      "cost": 935.122,
+      "buy_date": "2026-08-27",
+      "direction": "long",
+      "note": "预估买入 2026-08-27(用户确认8/27前后)",
+      "added_at": "2026-09-03 16:02:49",
+      "updated_at": "2026-09-03 16:02:49"
+    },
+    {
+      "id": "e6d8cd8f445e",
+      "symbol": "SPCX",
+      "name": "spacex",
+      "shares": 0.17023,
+      "cost": 140.77,
+      "buy_date": "2026-09-03",
+      "direction": "long",
+      "note": "预估买入 2026-09-03(今日新增)",
+      "added_at": "2026-09-03 16:04:01",
+      "updated_at": "2026-09-03 16:04:01"
+    }
+  ],
+  "watchlist": [],
+  "updated_at": "2026-09-03 16:04:01"
+}
